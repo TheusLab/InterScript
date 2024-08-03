@@ -1,6 +1,7 @@
 from InterScriptParser import InterScriptParser
 from InterScriptParserVisitor import InterScriptParserVisitor
 
+
 import subprocess
 import websocket
 
@@ -124,6 +125,12 @@ class InterScriptVisitor(InterScriptParserVisitor):
             return left == right
         elif operator == '!=':
             return left != right
+        elif operator == '&&':
+            return left and right
+        elif operator == '||':
+            return left or right
+        elif operator == '!':
+            return not left
         else:
             raise Exception(f"Unknown operator: {operator}")
 
