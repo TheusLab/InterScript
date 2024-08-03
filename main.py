@@ -15,6 +15,10 @@ class InterScriptCompiler:
         visitor.visit(tree)
 
 if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python main.py <source-file>")
+        sys.exit(1)
+
     input_stream = FileStream(sys.argv[1])
     compiler = InterScriptCompiler()
     compiler.compile(input_stream)
