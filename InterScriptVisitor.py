@@ -1,10 +1,14 @@
 from InterScriptParser import InterScriptParser
 from InterScriptParserVisitor import InterScriptParserVisitor
 
+import subprocess
+import websocket
+
 class InterScriptVisitor(InterScriptParserVisitor):
     def __init__(self):
         self.variables = {}
         self.functions = {}
+        self.websockets = {}
 
     def visitProgram(self, ctx: InterScriptParser.ProgramContext):
         print("Visiting Program")
@@ -30,6 +34,12 @@ class InterScriptVisitor(InterScriptParserVisitor):
         func_name = ctx.IDENTIFIER().getText()
         args = [self.visit(arg) for arg in ctx.argumentList().expression()]
 
+        if func_name == "run_process":
+            return self.run_process(args)
+
+        if func_name == "connect_websocket":
+            return self.connect_websocket(args)
+
         if func_name not in self.functions:
             raise Exception(f"Undefined function: {func_name}")
 
@@ -37,20 +47,32 @@ class InterScriptVisitor(InterScriptParserVisitor):
         if len(args) != len(params):
             raise Exception(f"Function {func_name} expects {len(params)} arguments, got {len(args)}")
 
-        # Save the current variable state and create a new one for the function call
         current_variables = self.variables.copy()
         self.variables = dict(zip(params, args))
 
         result = None
         for statement in body:
             result = self.visit(statement)
-            if result is not None:  # Return statement
+            if result is not None:
                 break
 
-        # Restore the original variable state
         self.variables = current_variables
         print(f"Function call: {func_name} with args {args} returned {result}")
         return result
+
+    def run_process(self, args):
+        command = args[0]
+        result = subprocess.run(command, capture_output=True, text=True, shell=True)
+        print(f"Process run: {command} with output: {result.stdout}")
+        return result.stdout
+
+    def connect_websocket(self, args):
+        url = args[0]
+        ws = websocket.WebSocket()
+        ws.connect(url)
+        self.websockets[url] = ws
+        print(f"Connected to WebSocket: {url}")
+        return f"Connected to {url}"
 
     def visitIfStatement(self, ctx: InterScriptParser.IfStatementContext):
         print("Visiting If Statement")
