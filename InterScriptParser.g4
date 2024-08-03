@@ -28,7 +28,7 @@ expressionStatement: expression SEMICOLON ;
 
 expression: primaryExpr (binaryOp primaryExpr)* ;
 
-binaryOp: PLUS | MINUS | STAR | SLASH | GT | LT | EQ | NEQ ;
+binaryOp: PLUS | MINUS | STAR | SLASH | GT | LT | EQ | NEQ | AND | OR | NOT ;
 
 primaryExpr: IDENTIFIER
            | literal
