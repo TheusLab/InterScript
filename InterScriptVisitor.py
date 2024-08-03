@@ -53,14 +53,19 @@ class InterScriptVisitor(InterScriptParserVisitor):
         return result
 
     def visitIfStatement(self, ctx: InterScriptParser.IfStatementContext):
-        # If statement handling
         print("Visiting If Statement")
-        pass
+        condition = self.visit(ctx.expression())
+        if condition:
+            return self.visit(ctx.statement(0))
+        elif ctx.ELSE():
+            return self.visit(ctx.statement(1))
 
     def visitForStatement(self, ctx: InterScriptParser.ForStatementContext):
-        # For statement handling
         print("Visiting For Statement")
-        pass
+        self.visit(ctx.variableDeclaration())
+        while self.visit(ctx.expression()):
+            self.visit(ctx.statement())
+            self.visit(ctx.expressionStatement())
 
     def visitReturnStatement(self, ctx: InterScriptParser.ReturnStatementContext):
         print("Visiting Return Statement")
@@ -76,26 +81,29 @@ class InterScriptVisitor(InterScriptParserVisitor):
         for i in range(1, len(ctx.primaryExpr())):
             operator = ctx.binaryOp(i-1).getText()
             right = self.visit(ctx.primaryExpr(i))
-            print(f"Binary operation: {left} {operator} {right}")
-            if operator == '+':
-                left += right
-            elif operator == '-':
-                left -= right
-            elif operator == '*':
-                left *= right
-            elif operator == '/':
-                left /= right
-            elif operator == '>':
-                left = left > right
-            elif operator == '<':
-                left = left < right
-            elif operator == '==':
-                left = left == right
-            elif operator == '!=':
-                left = left != right
-            else:
-                raise Exception(f"Unknown operator: {operator}")
+            left = self.applyOperator(left, operator, right)
         return left
+
+    def applyOperator(self, left, operator, right):
+        print(f"Binary operation: {left} {operator} {right}")
+        if operator == '+':
+            return left + right
+        elif operator == '-':
+            return left - right
+        elif operator == '*':
+            return left * right
+        elif operator == '/':
+            return left / right
+        elif operator == '>':
+            return left > right
+        elif operator == '<':
+            return left < right
+        elif operator == '==':
+            return left == right
+        elif operator == '!=':
+            return left != right
+        else:
+            raise Exception(f"Unknown operator: {operator}")
 
     def visitLiteral(self, ctx: InterScriptParser.LiteralContext):
         if ctx.INT():
